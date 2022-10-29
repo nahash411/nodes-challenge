@@ -13,7 +13,6 @@ require 'logger'
 # @@logger = Logger.new('logfile.log')
 @logger.level = Logger::INFO
 
-
 @id_map = {"089ef556-dfff-4ff2-9733-654645be56fe" => 1}
 
 def get_nodes node_id
@@ -24,12 +23,12 @@ def get_nodes node_id
 
   resp = RestClient.get(url)
   body = JSON.parse(resp.body)
+
+  new_nodes = []
   
   body.each do |item|
     child_nodes = item['child_node_ids']
     @logger.info "Found #{child_nodes.length} child nodes"
-
-    return nil if child_nodes.nil?
 
     child_nodes.each do |child_node|
 
@@ -39,9 +38,13 @@ def get_nodes node_id
 
       @id_map[child_node] += 1
 
-      get_nodes child_node
     end
 
+    new_nodes.concat child_nodes
+  end
+
+  if !new_nodes.empty?
+    get_nodes new_nodes.join(',')
   end
 end
 
